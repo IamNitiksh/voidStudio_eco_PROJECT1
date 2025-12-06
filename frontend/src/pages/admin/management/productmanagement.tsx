@@ -30,7 +30,8 @@ const Productmanagement = () => {
       price: 0,
       description: "",
     };
-
+    
+  // ... state declarations (unchanged)
   const [btnLoading, setBtnLoading] = useState<boolean>(false);
   const [priceUpdate, setPriceUpdate] = useState<number>(price);
   const [stockUpdate, setStockUpdate] = useState<number>(stock);
@@ -43,6 +44,17 @@ const Productmanagement = () => {
   const [deleteProduct] = useDeleteProductMutation();
 
   const photosFiles = useFileHandler("multiple", 10, 5);
+
+  // ... useEffect, submitHandler, and deleteHandler (unchanged logic)
+  useEffect(() => {
+    if (data) {
+      setNameUpdate(data.product.name);
+      setPriceUpdate(data.product.price);
+      setStockUpdate(data.product.stock);
+      setCategoryUpdate(data.product.category);
+      setDescriptionUpdate(data.product.description);
+    }
+  }, [data]);
 
   const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -88,124 +100,149 @@ const Productmanagement = () => {
     responseToast(res, navigate, "/admin/product");
   };
 
-  useEffect(() => {
-    if (data) {
-      setNameUpdate(data.product.name);
-      setPriceUpdate(data.product.price);
-      setStockUpdate(data.product.stock);
-      setCategoryUpdate(data.product.category);
-      setDescriptionUpdate(data.product.description);
-    }
-  }, [data]);
-
   if (isError) return <Navigate to={"/404"} />;
 
   return (
-    <div className="admin-container">
+    <div className="flex h-screen bg-gray-50">
       <AdminSidebar />
-      <main className="product-management">
+      <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">Product Management</h1>
         {isLoading ? (
           <Skeleton length={20} />
         ) : (
-          <>
-            <section>
-              <strong>ID - {data?.product._id}</strong>
-              <img src={transformImage(photos[0]?.url)} alt="Product" />
-              <p>{name}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Product Info Section */}
+            <section className="lg:col-span-1 bg-white shadow-lg rounded-xl p-6 h-fit text-center">
+              <strong className="text-sm font-semibold text-gray-500 block mb-4">ID - {data?.product._id}</strong>
+              {/* Using a placeholder for the image if not available or transforming it */}
+              <img 
+                src={transformImage(photos[0]?.url)} 
+                alt="Product" 
+                className="w-48 h-48 object-contain mx-auto rounded-lg mb-4 border border-gray-200"
+              />
+              <p className="text-xl font-bold mb-2 text-gray-900">{name}</p>
               {stock > 0 ? (
-                <span className="green">{stock} Available</span>
+                <span className="text-green-600 font-semibold bg-green-100 px-3 py-1 rounded-full inline-block">
+                  {stock} Available
+                </span>
               ) : (
-                <span className="red"> Not Available</span>
+                <span className="text-red-600 font-semibold bg-red-100 px-3 py-1 rounded-full inline-block">
+                  Not Available
+                </span>
               )}
-              <h3>₹{price}</h3>
+              <h3 className="text-2xl font-extrabold mt-4 text-indigo-600">₹{price}</h3>
             </section>
-            <article>
-              <button className="product-delete-btn" onClick={deleteHandler}>
-                <FaTrash />
+            
+            {/* Management Form Section */}
+            <article className="lg:col-span-2 bg-white shadow-lg rounded-xl p-6 relative">
+              <button 
+                className="absolute top-4 right-4 text-red-500 hover:text-red-700 transition duration-150 p-2 rounded-full hover:bg-red-50" 
+                onClick={deleteHandler}
+                title="Delete Product"
+              >
+                <FaTrash className="w-5 h-5" />
               </button>
-              <form onSubmit={submitHandler}>
-                <h2>Manage</h2>
-                <div>
-                  <label>Name</label>
-                  <input
-                    type="text"
-                    placeholder="Name"
-                    value={nameUpdate}
-                    onChange={(e) => setNameUpdate(e.target.value)}
-                  />
+              
+              <form onSubmit={submitHandler} className="space-y-6">
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Manage Product</h2>
+                
+                {/* Input Fields */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      value={nameUpdate}
+                      onChange={(e) => setNameUpdate(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea
+                      required
+                      placeholder="Description"
+                      value={descriptionUpdate}
+                      onChange={(e) => setDescriptionUpdate(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 h-24"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+                    <input
+                      type="number"
+                      placeholder="Price"
+                      value={priceUpdate}
+                      onChange={(e) => setPriceUpdate(Number(e.target.value))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                    <input
+                      type="number"
+                      placeholder="Stock"
+                      value={stockUpdate}
+                      onChange={(e) => setStockUpdate(Number(e.target.value))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <input
+                      type="text"
+                      placeholder="eg. laptop, camera etc"
+                      value={categoryUpdate}
+                      onChange={(e) => setCategoryUpdate(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Photos</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={photosFiles.changeHandler}
+                      className="w-full text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label>Description</label>
-                  <textarea
-                    required
-                    placeholder="Description"
-                    value={descriptionUpdate}
-                    onChange={(e) => setDescriptionUpdate(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label>Price</label>
-                  <input
-                    type="number"
-                    placeholder="Price"
-                    value={priceUpdate}
-                    onChange={(e) => setPriceUpdate(Number(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <label>Stock</label>
-                  <input
-                    type="number"
-                    placeholder="Stock"
-                    value={stockUpdate}
-                    onChange={(e) => setStockUpdate(Number(e.target.value))}
-                  />
-                </div>
+                {photosFiles.error && <p className="text-red-500 text-sm mt-2">{photosFiles.error}</p>}
 
-                <div>
-                  <label>Category</label>
-                  <input
-                    type="text"
-                    placeholder="eg. laptop, camera etc"
-                    value={categoryUpdate}
-                    onChange={(e) => setCategoryUpdate(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Photos</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={photosFiles.changeHandler}
-                  />
-                </div>
-
-                {photosFiles.error && <p>{photosFiles.error}</p>}
-
+                {/* Photo Preview */}
                 {photosFiles.preview && (
-                  <div
-                    style={{ display: "flex", gap: "1rem", overflowX: "auto" }}
-                  >
+                  <div className="flex gap-4 overflow-x-auto p-2 border border-gray-200 rounded-lg bg-gray-50">
                     {photosFiles.preview.map((img, i) => (
                       <img
-                        style={{ width: 100, height: 100, objectFit: "cover" }}
                         key={i}
                         src={img}
-                        alt="New Image"
+                        alt={`New Image ${i + 1}`}
+                        className="w-24 h-24 object-cover rounded-md flex-shrink-0 shadow-sm"
                       />
                     ))}
                   </div>
                 )}
 
-                <button disabled={btnLoading} type="submit">
-                  Update
+                {/* Submit Button */}
+                <button 
+                  disabled={btnLoading} 
+                  type="submit"
+                  className={`w-full py-3 mt-4 font-semibold rounded-lg transition duration-150 ${
+                    btnLoading 
+                      ? "bg-indigo-400 cursor-not-allowed" 
+                      : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md"
+                  }`}
+                >
+                  {btnLoading ? "Updating..." : "Update Product"}
                 </button>
               </form>
             </article>
-          </>
+          </div>
         )}
       </main>
     </div>

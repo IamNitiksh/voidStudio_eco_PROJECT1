@@ -1,17 +1,20 @@
 import { User } from "../models/user.js";
 import ErrorHandler from "../utils/utility-class.js";
-import { TryCatch } from "./error.js";
+import { TryCatch } from "../middlewares/error.js"; 
 
-// Middleware to make sure only admin is allowed
 export const adminOnly = TryCatch(async (req, res, next) => {
-  const { id } = req.query;
+  const { id } = req.query;
 
-  if (!id) return next(new ErrorHandler("Saale Login Kr phle", 401));
+  // FIX: Replaced slang with professional error messages
+  if (!id) return next(new ErrorHandler("Please login to access this resource", 401)); 
 
-  const user = await User.findById(id);
-  if (!user) return next(new ErrorHandler("Saale Fake ID Deta Hai", 401));
-  if (user.role !== "admin")
-    return next(new ErrorHandler("Saale Aukat Nhi Hai Teri", 403));
+  const user = await User.findById(id);
+  // FIX: Replaced slang with professional error messages
+  if (!user) return next(new ErrorHandler("Invalid User ID or Account Not Found", 401)); 
+    
+  if (user.role !== "admin")
+    // FIX: Replaced slang with professional error messages
+    return next(new ErrorHandler("You are not authorized to perform this action", 403)); 
 
-  next();
+  next();
 });

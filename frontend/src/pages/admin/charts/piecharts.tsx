@@ -11,27 +11,30 @@ const PieCharts = () => {
 
   const { isLoading, data, isError } = usePieQuery(user?._id!);
 
-  const order = data?.charts.orderFullfillment!;
-  const categories = data?.charts.productCategories!;
-  const stock = data?.charts.stockAvailablity!;
-  const revenue = data?.charts.revenueDistribution!;
-  const ageGroup = data?.charts.usersAgeGroup!;
-  const adminCustomer = data?.charts.adminCustomer!;
+  // Defaulting to empty arrays/objects if data is loading/unavailable
+  const order = data?.charts.orderFullfillment || { processing: 0, shipped: 0, delivered: 0 };
+  const categories = data?.charts.productCategories || [];
+  const stock = data?.charts.stockAvailablity || { inStock: 0, outOfStock: 0 };
+  const revenue = data?.charts.revenueDistribution || { marketingCost: 0, discount: 0, burnt: 0, productionCost: 0, netMargin: 0 };
+  const ageGroup = data?.charts.usersAgeGroup || { teen: 0, adult: 0, old: 0 };
+  const adminCustomer = data?.charts.adminCustomer || { admin: 0, customer: 0 };
 
   if (isError) return <Navigate to={"/admin/dashboard"} />;
 
   return (
-    <div className="admin-container">
+    <div className="flex h-screen bg-gray-50">
       <AdminSidebar />
-      <main className="chart-container">
-        <h1>Pie & Doughnut Charts</h1>
+      <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
+        <h1 className="text-3xl font-bold mb-8 text-gray-800">Pie & Doughnut Charts</h1>
 
         {isLoading ? (
           <Skeleton length={20} />
         ) : (
-          <>
-            <section>
-              <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            
+            {/* Order Fulfillment Ratio */}
+            <section className="bg-white shadow-lg rounded-xl p-6 flex flex-col items-center">
+              <div className="w-full max-w-xs h-64 flex justify-center items-center">
                 <PieChart
                   labels={["Processing", "Shipped", "Delivered"]}
                   data={[order.processing, order.shipped, order.delivered]}
@@ -43,11 +46,12 @@ const PieCharts = () => {
                   offset={[0, 0, 50]}
                 />
               </div>
-              <h2>Order Fulfillment Ratio</h2>
+              <h2 className="text-xl font-semibold mt-4 text-gray-700">Order Fulfillment Ratio</h2>
             </section>
 
-            <section>
-              <div>
+            {/* Product Categories Ratio */}
+            <section className="bg-white shadow-lg rounded-xl p-6 flex flex-col items-center">
+              <div className="w-full max-w-xs h-64 flex justify-center items-center">
                 <DoughnutChart
                   labels={categories.map((i) => Object.keys(i)[0])}
                   data={categories.map((i) => Object.values(i)[0])}
@@ -61,11 +65,12 @@ const PieCharts = () => {
                   offset={[0, 0, 0, 80]}
                 />
               </div>
-              <h2>Product Categories Ratio</h2>
+              <h2 className="text-xl font-semibold mt-4 text-gray-700">Product Categories Ratio</h2>
             </section>
 
-            <section>
-              <div>
+            {/* Stock Availability */}
+            <section className="bg-white shadow-lg rounded-xl p-6 flex flex-col items-center">
+              <div className="w-full max-w-xs h-64 flex justify-center items-center">
                 <DoughnutChart
                   labels={["In Stock", "Out Of Stock"]}
                   data={[stock.inStock, stock.outOfStock]}
@@ -75,47 +80,38 @@ const PieCharts = () => {
                   cutout={"70%"}
                 />
               </div>
-              <h2> Stock Availability</h2>
+              <h2 className="text-xl font-semibold mt-4 text-gray-700"> Stock Availability</h2>
             </section>
 
-            <section>
-              <div>
+            {/* Revenue Distribution */}
+            <section className="bg-white shadow-lg rounded-xl p-6 flex flex-col items-center">
+              <div className="w-full max-w-xs h-64 flex justify-center items-center">
                 <DoughnutChart
                   labels={[
-                    "Marketing Cost",
-                    "Discount",
-                    "Burnt",
-                    "Production Cost",
-                    "Net Margin",
+                    "Marketing Cost", "Discount", "Burnt",
+                    "Production Cost", "Net Margin",
                   ]}
                   data={[
-                    revenue.marketingCost,
-                    revenue.discount,
-                    revenue.burnt,
-                    revenue.productionCost,
-                    revenue.netMargin,
+                    revenue.marketingCost, revenue.discount, revenue.burnt,
+                    revenue.productionCost, revenue.netMargin,
                   ]}
                   backgroundColor={[
-                    "hsl(110,80%,40%)",
-                    "hsl(19,80%,40%)",
-                    "hsl(69,80%,40%)",
-                    "hsl(300,80%,40%)",
-                    "rgb(53, 162, 255)",
+                    "hsl(110,80%,40%)", "hsl(19,80%,40%)", "hsl(69,80%,40%)",
+                    "hsl(300,80%,40%)", "rgb(53, 162, 255)",
                   ]}
                   legends={false}
                   offset={[20, 30, 20, 30, 80]}
                 />
               </div>
-              <h2>Revenue Distribution</h2>
+              <h2 className="text-xl font-semibold mt-4 text-gray-700">Revenue Distribution</h2>
             </section>
 
-            <section>
-              <div>
+            {/* Users Age Group */}
+            <section className="bg-white shadow-lg rounded-xl p-6 flex flex-col items-center">
+              <div className="w-full max-w-xs h-64 flex justify-center items-center">
                 <PieChart
                   labels={[
-                    "Teenager(Below 20)",
-                    "Adult (20-40)",
-                    "Older (above 40)",
+                    "Teenager(Below 20)", "Adult (20-40)", "Older (above 40)",
                   ]}
                   data={[ageGroup.teen, ageGroup.adult, ageGroup.old]}
                   backgroundColor={[
@@ -126,11 +122,12 @@ const PieCharts = () => {
                   offset={[0, 0, 50]}
                 />
               </div>
-              <h2>Users Age Group</h2>
+              <h2 className="text-xl font-semibold mt-4 text-gray-700">Users Age Group</h2>
             </section>
 
-            <section>
-              <div>
+            {/* Admin vs Customer */}
+            <section className="bg-white shadow-lg rounded-xl p-6 flex flex-col items-center">
+              <div className="w-full max-w-xs h-64 flex justify-center items-center">
                 <DoughnutChart
                   labels={["Admin", "Customers"]}
                   data={[adminCustomer.admin, adminCustomer.customer]}
@@ -138,8 +135,9 @@ const PieCharts = () => {
                   offset={[0, 50]}
                 />
               </div>
+              <h2 className="text-xl font-semibold mt-4 text-gray-700">Admin vs Customer Ratio</h2>
             </section>
-          </>
+          </div>
         )}
       </main>
     </div>

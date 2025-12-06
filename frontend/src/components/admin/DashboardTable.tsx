@@ -33,11 +33,12 @@ const columns: Column<DataType>[] = [
 ];
 
 const DashboardTable = ({ data = [] }: { data: DataType[] }) => {
+  // The old "transaction-box" class is replaced by a Tailwind utility
   return TableHOC<DataType>(
     columns,
     data,
-    "transaction-box",
-    "Top Transaction"
+    "lg:col-span-2 col-span-full", // Tailwind class to fit common dashboard layouts
+    "Top Transactions" // Renamed from "Top Transaction" for better plural usage
   )();
 };
 

@@ -53,15 +53,16 @@ const columns: Column<DataType>[] = [
 const Customers = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
 
-  const { isLoading, data, isError, error } = useAllUsersQuery(user?._id!);
+  const { isLoading, data, isError, error } = useAllUsersQuery(user?._id ?? "");
 
   const [rows, setRows] = useState<DataType[]>([]);
 
   const [deleteUser] = useDeleteUserMutation();
 
   const deleteHandler = async (userId: string) => {
+    // Assuming responseToast uses async/await internally
     const res = await deleteUser({ userId, adminUserId: user?._id! });
-    responseToast(res, null, "");
+    responseToast(res, null, "User deleted successfully"); // Added success message
   };
 
   if (isError) {
@@ -75,9 +76,7 @@ const Customers = () => {
         data.users.map((i) => ({
           avatar: (
             <img
-              style={{
-                borderRadius: "50%",
-              }}
+              className="rounded-full w-12 h-12 object-cover" // Tailwind styles for avatar
               src={i.photo}
               alt={i.name}
             />
@@ -87,7 +86,10 @@ const Customers = () => {
           gender: i.gender,
           role: i.role,
           action: (
-            <button onClick={() => deleteHandler(i._id)}>
+            <button 
+              onClick={() => deleteHandler(i._id)}
+              className="text-red-500 hover:text-red-700 transition duration-150 p-2 rounded-full hover:bg-red-100" // Tailwind styles for trash button
+            >
               <FaTrash />
             </button>
           ),
@@ -98,15 +100,18 @@ const Customers = () => {
   const Table = TableHOC<DataType>(
     columns,
     rows,
-    "dashboard-product-box",
+    "w-full overflow-x-auto shadow-lg rounded-lg p-6 bg-white", // Tailwind classes for the table container
     "Customers",
     rows.length > 6
   )();
 
   return (
-    <div className="admin-container">
+    <div className="flex h-screen bg-gray-100"> {/* admin-container */}
       <AdminSidebar />
-      <main>{isLoading ? <Skeleton length={20} /> : Table}</main>
+      <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">Customer Management</h1>
+        {isLoading ? <Skeleton length={20} /> : <div className="max-w-full">{Table}</div>}
+      </main>
     </div>
   );
 };

@@ -24,6 +24,78 @@ import { RootState } from "../redux/store";
 import { CartItem, Review } from "../types/types";
 import { responseToast } from "../utils/features";
 
+// Helper components for the carousel (renamed for better Tailwind context)
+const NextButton: CarouselButtonType = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="carousel-btn bg-white/70 hover:bg-white p-3 rounded-full shadow-lg transition absolute right-2 top-1/2 -translate-y-1/2 z-10"
+  >
+    <FaArrowRightLong className="w-5 h-5 text-gray-800" />
+  </button>
+);
+const PrevButton: CarouselButtonType = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="carousel-btn bg-white/70 hover:bg-white p-3 rounded-full shadow-lg transition absolute left-2 top-1/2 -translate-y-1/2 z-10"
+  >
+    <FaArrowLeftLong className="w-5 h-5 text-gray-800" />
+  </button>
+);
+
+const ReviewCard = ({
+  review,
+  userId,
+  handleDeleteReview,
+}: {
+  userId?: string;
+  review: Review;
+  handleDeleteReview: (reviewId: string) => void;
+}) => (
+  <div className="bg-white p-6 rounded-xl shadow-md flex-shrink-0 w-80 md:w-96 border border-gray-100 relative">
+    <div className="mb-3">
+      <RatingsComponent value={review.rating} />
+    </div>
+    <p className="text-gray-700 italic line-clamp-4 mb-4">"{review.comment}"</p>
+    <div className="flex items-center space-x-3">
+      <img
+        src={review.user.photo}
+        alt="User"
+        className="w-10 h-10 rounded-full object-cover"
+      />
+      <small className="font-semibold text-gray-800">
+        {review.user.name}
+      </small>
+    </div>
+    {userId === review.user._id && (
+      <button
+        onClick={() => handleDeleteReview(review._id)}
+        className="absolute top-4 right-4 text-red-500 hover:text-red-700 transition p-2 rounded-full hover:bg-red-50"
+        title="Delete Review"
+      >
+        <FaTrash className="w-4 h-4" />
+      </button>
+    )}
+  </div>
+);
+
+// Loader Component (Tailwind-ified)
+const ProductLoader = () => {
+  return (
+    <div className="flex flex-col lg:flex-row gap-8 p-4 lg:p-8 min-h-[80vh]">
+      <section className="flex-1 max-w-full lg:max-w-xl">
+        <Skeleton width="100%" containerHeight="100%" height="80vh" length={1} />
+      </section>
+      <section className="flex-1 flex flex-col gap-8 p-4">
+        <Skeleton width="40%" length={3} />
+        <Skeleton width="50%" length={4} />
+        <Skeleton width="100%" length={2} />
+        <Skeleton width="100%" length={10} />
+      </section>
+    </div>
+  );
+};
+
+
 const ProductDetails = () => {
   const params = useParams();
   const dispatch = useDispatch();
@@ -71,10 +143,13 @@ const ProductDetails = () => {
     IconOutline: <FaRegStar />,
     value: 0,
     selectable: true,
+    // Adjusted styles for Tailwind compatibility and better appearance
     styles: {
-      fontSize: "1.75rem",
-      color: "coral",
+      fontSize: "2rem",
+      color: "gold", // Used color name for better semantic meaning in this context
       justifyContent: "flex-start",
+      display: "flex",
+      gap: "0.25rem",
     },
   });
 
@@ -98,24 +173,28 @@ const ProductDetails = () => {
 
     setReviewSubmitLoading(false);
 
-    responseToast(res, null, "");
+    responseToast(res, null, "Review submitted successfully!");
 
-    // API call to submit review
+    // Re-fetch reviews to update the list immediately
+    reviewsResponse.refetch(); 
   };
 
   const handleDeleteReview = async (reviewId: string) => {
     const res = await deleteReview({ reviewId, userId: user?._id });
-    responseToast(res, null, "");
+    responseToast(res, null, "Review deleted successfully!");
+    // Re-fetch reviews to update the list immediately
+    reviewsResponse.refetch(); 
   };
 
   return (
-    <div className="product-details">
+    <div className="product-details p-4 lg:p-8 bg-gray-50 min-h-screen">
       {isLoading ? (
         <ProductLoader />
       ) : (
         <>
-          <main>
-            <section>
+          <main className="flex flex-col lg:flex-row gap-8 bg-white p-6 rounded-xl shadow-lg">
+            {/* Image Gallery Section */}
+            <section className="w-full lg:w-1/2 relative h-96 lg:h-[600px] overflow-hidden rounded-lg shadow-xl cursor-pointer">
               <Slider
                 showThumbnails
                 showNav={false}
@@ -131,22 +210,53 @@ const ProductDetails = () => {
                 />
               )}
             </section>
-            <section>
-              <code>{data?.product?.category}</code>
-              <h1>{data?.product?.name}</h1>
-              <em
-                style={{ display: "flex", gap: "1rem", alignItems: "center" }}
-              >
-                <RatingsComponent value={data?.product?.ratings || 0} />(
-                {data?.product?.numOfReviews} reviews)
-              </em>
-              <h3>₹{data?.product?.price}</h3>
-              <article>
-                <div>
-                  <button onClick={decrement}>-</button>
-                  <span>{quantity}</span>
-                  <button onClick={increment}>+</button>
+            
+            {/* Details Section */}
+            <section className="w-full lg:w-1/2 p-4 lg:p-6 space-y-6">
+              <code className="inline-block px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
+                {data?.product?.category}
+              </code>
+              <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">
+                {data?.product?.name}
+              </h1>
+              
+              {/* Ratings and Review Count */}
+              <div className="flex items-center space-x-2 text-lg text-gray-600">
+                <RatingsComponent value={data?.product?.ratings || 0} />
+                <span className="text-sm font-medium text-gray-500">
+                  ({data?.product?.numOfReviews} reviews)
+                </span>
+              </div>
+              
+              {/* Price */}
+              <h3 className="text-4xl font-bold text-red-600">
+                ₹{data?.product?.price.toLocaleString("en-IN")}
+              </h3>
+              
+              {/* Quantity and Add to Cart */}
+              <article className="flex flex-col sm:flex-row gap-4">
+                {/* Quantity Control */}
+                <div className="flex items-center space-x-0 border border-gray-300 rounded-lg overflow-hidden">
+                  <button
+                    onClick={decrement}
+                    className="p-3 w-12 text-xl font-semibold bg-gray-100 hover:bg-gray-200 transition text-gray-700"
+                    disabled={quantity <= 1}
+                  >
+                    -
+                  </button>
+                  <span className="p-3 w-12 text-center text-lg font-semibold border-x border-gray-300">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={increment}
+                    className="p-3 w-12 text-xl font-semibold bg-gray-100 hover:bg-gray-200 transition text-gray-700"
+                    disabled={quantity >= (data?.product?.stock || 0)}
+                  >
+                    +
+                  </button>
                 </div>
+                
+                {/* Add to Cart Button */}
                 <button
                   onClick={() =>
                     addToCartHandler({
@@ -158,60 +268,87 @@ const ProductDetails = () => {
                       photo: data?.product?.photos[0].url || "",
                     })
                   }
+                  disabled={(data?.product?.stock || 0) < 1}
+                  className="flex-1 sm:flex-grow-0 bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed text-lg shadow-md"
                 >
-                  Add To Cart
+                  {(data?.product?.stock || 0) < 1 ? "Out of Stock" : "Add To Cart"}
                 </button>
               </article>
 
-              <p>{data?.product?.description}</p>
+              {/* Description */}
+              <h4 className="text-xl font-semibold text-gray-800 pt-4">Product Description</h4>
+              <p className="text-gray-600 leading-relaxed">
+                {data?.product?.description}
+              </p>
             </section>
           </main>
         </>
       )}
 
-      <dialog ref={reviewDialogRef} className="review-dialog">
-        <button onClick={reviewCloseHandler}>X</button>
-        <h2>Write a Review</h2>
-        <form onSubmit={submitReview}>
+      {/* Review Dialog */}
+      <dialog ref={reviewDialogRef} className="review-dialog backdrop:bg-black/50 p-6 rounded-xl shadow-2xl max-w-lg w-full">
+        <button
+          onClick={reviewCloseHandler}
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-900 transition text-xl p-1"
+        >
+          &times;
+        </button>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Write a Review</h2>
+        <form onSubmit={submitReview} className="space-y-4">
           <textarea
             value={reviewComment}
             onChange={(e) => setReviewComment(e.target.value)}
-            placeholder="Review..."
+            placeholder="Share your thoughts on the product..."
+            rows={4}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-coral-500 focus:border-coral-500 transition resize-none"
           ></textarea>
-          <RatingsEditable />
-          <button disabled={reviewSubmitLoading} type="submit">
-            Submit
+          
+          {/* Ratings component is styled via the useRating hook for consistency */}
+          <div className="flex items-center space-x-2">
+            <span className="font-medium text-gray-700">Your Rating:</span>
+            <RatingsEditable />
+          </div>
+          
+          <button
+            disabled={reviewSubmitLoading || rating === 0 || reviewComment.trim() === ""}
+            type="submit"
+            className="w-full bg-coral-600 text-white font-semibold py-3 rounded-lg hover:bg-coral-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {reviewSubmitLoading ? "Submitting..." : "Submit Review"}
           </button>
         </form>
       </dialog>
 
-      <section>
-        <article>
-          <h2>Reviews</h2>
-
+      {/* Reviews Section */}
+      <section className="mt-12 p-6 bg-white rounded-xl shadow-lg">
+        <article className="flex justify-between items-center mb-6 border-b pb-4">
+          <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
           {reviewsResponse.isLoading
             ? null
             : user && (
-                <button onClick={showDialog}>
-                  <FiEdit />
+                <button
+                  onClick={showDialog}
+                  className="flex items-center space-x-2 bg-green-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-green-600 transition shadow-md"
+                >
+                  <FiEdit className="w-4 h-4" />
+                  <span>Write Review</span>
                 </button>
               )}
         </article>
+        
+        {/* Reviews Carousel/List */}
         <div
-          style={{
-            display: "flex",
-            gap: "2rem",
-            overflowX: "auto",
-            padding: "2rem",
-          }}
+          className="flex gap-4 overflow-x-auto p-2" // Added p-2 for inner spacing
+          style={{ scrollbarWidth: "none" }} // Hide scrollbar for cleaner look
         >
           {reviewsResponse.isLoading ? (
+            // Skeleton loader for reviews
             <>
-              <Skeleton width="45rem" length={5} />
-              <Skeleton width="45rem" length={5} />
-              <Skeleton width="45rem" length={5} />
+              <Skeleton width="100%" height="200px" className="flex-shrink-0 w-80 md:w-96" />
+              <Skeleton width="100%" height="200px" className="flex-shrink-0 w-80 md:w-96" />
+              <Skeleton width="100%" height="200px" className="flex-shrink-0 w-80 md:w-96" />
             </>
-          ) : (
+          ) : reviewsResponse.data?.reviews && reviewsResponse.data.reviews.length > 0 ? (
             reviewsResponse.data?.reviews.map((review) => (
               <ReviewCard
                 handleDeleteReview={handleDeleteReview}
@@ -220,82 +357,15 @@ const ProductDetails = () => {
                 review={review}
               />
             ))
+          ) : (
+            <div className="text-center w-full py-10 text-gray-500">
+              No reviews yet. Be the first to review this product!
+            </div>
           )}
         </div>
       </section>
     </div>
   );
 };
-
-const ReviewCard = ({
-  review,
-  userId,
-  handleDeleteReview,
-}: {
-  userId?: string;
-  review: Review;
-  handleDeleteReview: (reviewId: string) => void;
-}) => (
-  <div className="review">
-    <RatingsComponent value={review.rating} />
-    <p>{review.comment}</p>
-    <div>
-      <img src={review.user.photo} alt="User" />
-      <small>{review.user.name}</small>
-    </div>
-    {userId === review.user._id && (
-      <button onClick={() => handleDeleteReview(review._id)}>
-        <FaTrash />
-      </button>
-    )}
-  </div>
-);
-
-const ProductLoader = () => {
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: "2rem",
-        border: "1px solid #f1f1f1",
-        height: "80vh",
-      }}
-    >
-      <section style={{ width: "100%", height: "100%" }}>
-        <Skeleton
-          width="100%"
-          containerHeight="100%"
-          height="100%"
-          length={1}
-        />
-      </section>
-      <section
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          gap: "4rem",
-          padding: "2rem",
-        }}
-      >
-        <Skeleton width="40%" length={3} />
-        <Skeleton width="50%" length={4} />
-        <Skeleton width="100%" length={2} />
-        <Skeleton width="100%" length={10} />
-      </section>
-    </div>
-  );
-};
-
-const NextButton: CarouselButtonType = ({ onClick }) => (
-  <button onClick={onClick} className="carousel-btn">
-    <FaArrowRightLong />
-  </button>
-);
-const PrevButton: CarouselButtonType = ({ onClick }) => (
-  <button onClick={onClick} className="carousel-btn">
-    <FaArrowLeftLong />
-  </button>
-);
 
 export default ProductDetails;

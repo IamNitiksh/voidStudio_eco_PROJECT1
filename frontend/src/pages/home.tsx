@@ -6,99 +6,18 @@ import ProductCard from "../components/product-card";
 import { useLatestProductsQuery } from "../redux/api/productAPI";
 import { addToCart } from "../redux/reducer/cartReducer";
 import { CartItem } from "../types/types";
-import videoCover from "../assets/videos/cover.mp4";
-import { FaAnglesDown, FaHeadset } from "react-icons/fa6";
+import { FaArrowRight, FaHeadset } from "react-icons/fa6";
 import { motion } from "framer-motion";
 import { Slider } from "6pp";
 import { TbTruckDelivery } from "react-icons/tb";
 import { LuShieldCheck } from "react-icons/lu";
 import { useEffect } from "react";
 
-const clients = [
-  {
-    src: "https://www.vectorlogo.zone/logos/reactjs/reactjs-ar21.svg",
-    alt: "react",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/nodejs/nodejs-ar21.svg",
-    alt: "node",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/mongodb/mongodb-ar21.svg",
-    alt: "mongodb",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/expressjs/expressjs-ar21.svg",
-    alt: "express",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/js_redux/js_redux-ar21.svg",
-    alt: "redux",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/typescriptlang/typescriptlang-ar21.svg",
-    alt: "typescript",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/sass-lang/sass-lang-ar21.svg",
-    alt: "sass",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/firebase/firebase-ar21.svg",
-    alt: "firebase",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/figma/figma-ar21.svg",
-    alt: "figma",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/github/github-ar21.svg",
-    alt: "github",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/docker/docker-ar21.svg",
-    alt: "Docker",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/kubernetes/kubernetes-ar21.svg",
-    alt: "Kubernetes",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/nestjs/nestjs-ar21.svg",
-    alt: "Nest.js",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/graphql/graphql-ar21.svg",
-    alt: "GraphQL",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/jestjsio/jestjsio-ar21.svg",
-    alt: "Jest",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/redis/redis-ar21.svg",
-    alt: "Redis",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/postgresql/postgresql-ar21.svg",
-    alt: "PostgreSQL",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/jenkins/jenkins-ar21.svg",
-    alt: "Jenkins",
-  },
-];
-
 const banners = [
   "https://res.cloudinary.com/dj5q966nb/image/upload/v1719253445/rmbjpuzctjdbtt8hewaz.png",
   "https://res.cloudinary.com/dj5q966nb/image/upload/v1719253433/ticeufjqvf6napjhdiee.png",
 ];
+
 const categories = [
   "Electronics",
   "Mobiles",
@@ -116,17 +35,17 @@ const categories = [
 
 const services = [
   {
-    icon: <TbTruckDelivery />,
+    icon: <TbTruckDelivery className="w-8 h-8 text-blue-600" />,
     title: "FREE AND FAST DELIVERY",
     description: "Free delivery for all orders over $200",
   },
   {
-    icon: <LuShieldCheck />,
+    icon: <LuShieldCheck className="w-8 h-8 text-green-600" />,
     title: "SECURE PAYMENT",
     description: "100% secure payment",
   },
   {
-    icon: <FaHeadset />,
+    icon: <FaHeadset className="w-8 h-8 text-purple-600" />,
     title: "24/7 SUPPORT",
     description: "Get support 24/7",
   },
@@ -134,10 +53,8 @@ const services = [
 
 const Home = () => {
   const { data, isError, isLoading } = useLatestProductsQuery("");
-
   const dispatch = useDispatch();
 
-  // Handle errors in useEffect instead of render
   useEffect(() => {
     if (isError) {
       toast.error("Cannot Fetch the Products");
@@ -150,178 +67,183 @@ const Home = () => {
     toast.success("Added to cart");
   };
 
-  const coverMessage =
-    "Fashion isn't just clothes; it's a vibrant language. Silhouettes and textures speak volumes, a conversation starter with every bold print. It's a way to tell our story, a confidence booster, or a playful exploration. From elegance to rebellion, fashion lets us navigate the world in style.".split(
-      " "
-    );
-
   return (
-    <>
-      <div className="bg-red-500">
-        <section></section>
-
-        <div>
-          <aside>
-            <h1>Categories</h1>
-            <ul>
-              {categories.map((i) => (
-                <li key={i}>
-                  <Link to={`/search?category=${i.toLowerCase()}`}>{i}</Link>
-                </li>
-              ))}
-            </ul>
-          </aside>
-          <Slider
-            autoplay
-            autoplayDuration={1500}
-            showNav={false}
-            images={banners}
-          />
-        </div>
-
-        <h1>
-          Latest Products
-          <Link to="/search" className="findmore">
-            More
-          </Link>
-        </h1>
-
-        <main>
-          {isLoading ? (
-            <>
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} style={{ height: "25rem" }}>
-                  <Skeleton width="18.75rem" length={1} height="20rem" />
-                  <Skeleton width="18.75rem" length={2} height="1.95rem" />
-                </div>
-              ))}
-            </>
-          ) : (
-            data?.products.map((i) => (
-              <ProductCard
-                key={i._id}
-                productId={i._id}
-                name={i.name}
-                price={i.price}
-                stock={i.stock}
-                handler={addToCartHandler}
-                photos={i.photos}
-              />
-            ))
-          )}
-        </main>
-      </div>
-
-      <article className="cover-video-container">
-        <div className="cover-video-overlay"></div>
-        <video autoPlay loop muted src={videoCover} />
-        <div className="cover-video-content">
-          <motion.h2
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            Fashion
-          </motion.h2>
-          {coverMessage.map((el, i) => (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{
-                duration: 0.25,
-                delay: i / 10,
-              }}
-              key={i}
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 text-white py-20 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-6xl font-bold mb-6"
             >
-              {el}{" "}
-            </motion.span>
-          ))}
+              Discover Amazing Products
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-xl md:text-2xl mb-8 text-blue-100"
+            >
+              Shop the latest trends with unbeatable prices
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <Link
+                to="/search"
+                className="inline-flex items-center bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                Shop Now
+                <FaArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+            </motion.div>
+          </div>
         </div>
-        <motion.span
-          animate={{
-            y: [0, 10, 0],
-            transition: {
-              duration: 1,
-              repeat: Infinity,
-            },
-          }}
-        >
-          <FaAnglesDown />
-        </motion.span>
-      </article>
+      </section>
 
-      <article className="our-clients">
-        <div>
-          <h2>Our Clients</h2>
-          <div>
-            {clients.map((client, i) => (
-              <motion.img
-                initial={{
-                  opacity: 0,
-                  x: -10,
-                }}
-                whileInView={{
-                  opacity: 1,
-                  x: 0,
-                  transition: {
-                    delay: i / 20,
-                    ease: "circIn",
-                  },
-                }}
-                src={client.src}
-                alt={client.alt}
-                key={i}
-              />
-            ))}
+      {/* Categories Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Shop by Category
+            </h2>
+            <p className="text-lg text-gray-600">
+              Find exactly what you're looking for
+            </p>
           </div>
 
-          <motion.p
-            initial={{ opacity: 0, y: -100 }}
-            whileInView={{
-              opacity: 1,
-              y: 0,
-              transition: {
-                delay: clients.length / 20,
-              },
-            }}
-          >
-            Trusted By 100+ Companies in 30+ countries
-          </motion.p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {categories.map((category, index) => (
+              <motion.div
+                key={category}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <Link
+                  to={`/search?category=${category.toLowerCase()}`}
+                  className="block bg-gray-50 hover:bg-gray-100 rounded-xl p-6 text-center transition-all duration-300 transform hover:scale-105 hover:shadow-md"
+                >
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {category}
+                  </h3>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </article>
+      </section>
 
-      <hr
-        style={{
-          backgroundColor: "rgba(0,0,0,0.1)",
-          border: "none",
-          height: "1px",
-        }}
-      />
+      {/* Banner Slider */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl overflow-hidden shadow-xl">
+            <Slider
+              autoplay
+              autoplayDuration={3000}
+              showNav={false}
+              images={banners}
+            />
+          </div>
+        </div>
+      </section>
 
-      <article className="our-services">
-        <ul>
-          {services.map((service, i) => (
-            <motion.li
-              initial={{ opacity: 0, y: -100 }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-                transition: {
-                  delay: i / 20,
-                },
-              }}
-              key={service.title}
+      {/* Latest Products */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                Latest Products
+              </h2>
+              <p className="text-lg text-gray-600">
+                Check out our newest arrivals
+              </p>
+            </div>
+            <Link
+              to="/search"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold transition-colors"
             >
-              <div>{service.icon}</div>
-              <section>
-                <h3>{service.title}Y</h3>
-                <p>{service.title}</p>
-              </section>
-            </motion.li>
-          ))}
-        </ul>
-      </article>
-    </>
+              View All
+              <FaArrowRight className="ml-2 w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {isLoading ? (
+              Array.from({ length: 8 }, (_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm p-6">
+                  <Skeleton width="100%" length={1} height="200px" />
+                  <Skeleton width="80%" length={1} height="24px" />
+                  <Skeleton width="60%" length={1} height="20px" />
+                </div>
+              ))
+            ) : (
+              data?.products.map((product, index) => (
+                <motion.div
+                  key={product._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                >
+                  <ProductCard
+                    productId={product._id}
+                    name={product.name}
+                    price={product.price}
+                    stock={product.stock}
+                    handler={addToCartHandler}
+                    photos={product.photos}
+                  />
+                </motion.div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Why Choose Us?
+            </h2>
+            <p className="text-lg text-gray-600">
+              We're committed to providing the best shopping experience
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {services.map((service, index) => (
+              <motion.div
+                key={service.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+                viewport={{ once: true }}
+                className="bg-white rounded-xl p-8 text-center shadow-sm hover:shadow-md transition-shadow duration-300"
+              >
+                <div className="flex justify-center mb-4">
+                  {service.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  {service.title}
+                </h3>
+                <p className="text-gray-600">
+                  {service.description}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
   );
 };
 

@@ -49,7 +49,8 @@ const columns: Column<DataType>[] = [
 const Transaction = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
 
-  const { isLoading, data, isError, error } = useAllOrdersQuery(user?._id!);
+  // Use optional chaining and nullish coalescing for safety if user is null/undefined
+  const { isLoading, data, isError, error } = useAllOrdersQuery(user?._id ?? ""); 
 
   const [rows, setRows] = useState<DataType[]>([]);
 
@@ -70,16 +71,23 @@ const Transaction = () => {
             <span
               className={
                 i.status === "Processing"
-                  ? "red"
+                  ? "text-red-500 font-semibold"
                   : i.status === "Shipped"
-                  ? "green"
-                  : "purple"
+                  ? "text-green-500 font-semibold"
+                  : "text-purple-500 font-semibold"
               }
             >
               {i.status}
             </span>
           ),
-          action: <Link to={`/admin/transaction/${i._id}`}>Manage</Link>,
+          action: (
+            <Link 
+              to={`/admin/transaction/${i._id}`}
+              className="text-blue-500 hover:text-blue-700 font-medium transition duration-150"
+            >
+              Manage
+            </Link>
+          ),
         }))
       );
   }, [data]);
@@ -87,14 +95,24 @@ const Transaction = () => {
   const Table = TableHOC<DataType>(
     columns,
     rows,
-    "dashboard-product-box",
+    "w-full overflow-x-auto shadow-lg rounded-lg p-6 bg-white", // Tailwind classes for the table container
     "Transactions",
     rows.length > 6
   )();
+  
   return (
-    <div className="admin-container">
+    <div className="flex h-screen bg-gray-100"> {/* admin-container */}
       <AdminSidebar />
-      <main>{isLoading ? <Skeleton length={20} /> : Table}</main>
+      <main className="flex-1 p-4 sm:p-6 overflow-y-auto"> {/* main content area */}
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">Transaction Management</h1>
+        {isLoading ? (
+          <Skeleton length={20} />
+        ) : (
+          <div className="max-w-full"> {/* Wrapper for the TableHOC */}
+            {Table}
+          </div>
+        )}
+      </main>
     </div>
   );
 };

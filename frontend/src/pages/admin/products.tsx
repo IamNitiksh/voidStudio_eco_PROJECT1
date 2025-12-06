@@ -45,7 +45,7 @@ const columns: Column<DataType>[] = [
 const Products = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
 
-  const { isLoading, isError, error, data } = useAllProductsQuery(user?._id!);
+  const { isLoading, isError, error, data } = useAllProductsQuery(user?._id ?? "");
 
   const [rows, setRows] = useState<DataType[]>([]);
 
@@ -58,11 +58,18 @@ const Products = () => {
     if (data)
       setRows(
         data.products.map((i) => ({
-          photo: <img src={i.photos?.[0]?.url} />,
+          photo: <img src={i.photos?.[0]?.url} className="w-16 h-16 object-cover rounded-md" alt={i.name} />,
           name: i.name,
           price: i.price,
           stock: i.stock,
-          action: <Link to={`/admin/product/${i._id}`}>Manage</Link>,
+          action: (
+            <Link 
+              to={`/admin/product/${i._id}`}
+              className="text-blue-500 hover:text-blue-700 font-medium transition duration-150"
+            >
+              Manage
+            </Link>
+          ),
         }))
       );
   }, [data]);
@@ -70,17 +77,25 @@ const Products = () => {
   const Table = TableHOC<DataType>(
     columns,
     rows,
-    "dashboard-product-box",
+    "w-full overflow-x-auto shadow-lg rounded-lg p-6 bg-white", // Tailwind classes for the table container
     "Products",
     rows.length > 6
   )();
 
   return (
-    <div className="admin-container">
+    <div className="flex h-screen bg-gray-100 relative"> {/* admin-container + relative for button */}
       <AdminSidebar />
-      <main>{isLoading ? <Skeleton length={20} /> : Table}</main>
-      <Link to="/admin/product/new" className="create-product-btn">
-        <FaPlus />
+      <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">Product Management</h1>
+        {isLoading ? <Skeleton length={20} /> : <div className="max-w-full">{Table}</div>}
+      </main>
+      
+      {/* create-product-btn (Floating Button) */}
+      <Link 
+        to="/admin/product/new" 
+        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition duration-300 z-10"
+      >
+        <FaPlus className="text-xl" />
       </Link>
     </div>
   );

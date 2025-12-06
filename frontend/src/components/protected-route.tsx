@@ -20,6 +20,7 @@ const ProtectedRoute = ({
 
   if (adminOnly && !admin) return <Navigate to={redirect} />;
 
+  // Note: No Tailwind styling is needed here, as it only handles routing logic.
   return children ? children : <Outlet />;
 };
 

@@ -44,40 +44,52 @@ const NewDiscount = () => {
       }
     } catch (error) {
       console.log(error);
+      toast.error("Failed to create coupon.");
     } finally {
       setBtnLoading(false);
     }
   };
 
   return (
-    <div className="admin-container">
+    <div className="flex h-screen bg-gray-50">
       <AdminSidebar />
-      <main className="product-management">
-        <article>
-          <form onSubmit={submitHandler}>
-            <h2>New Coupon</h2>
+      <main className="flex-1 p-4 sm:p-8 overflow-y-auto flex justify-center items-start">
+        <article className="w-full max-w-lg bg-white shadow-xl rounded-xl p-8">
+          <form onSubmit={submitHandler} className="space-y-6">
+            <h2 className="text-3xl font-bold mb-6 text-center text-indigo-700">New Coupon</h2>
+            
             <div>
-              <label>Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
               <input
                 type="text"
-                placeholder="Coupon Code"
+                placeholder="e.g., BLACKFRIDAY20"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
 
             <div>
-              <label>Price</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Discount Amount (%)</label>
               <input
                 type="number"
-                placeholder="Amount"
+                placeholder="e.g., 20, 50"
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
 
-            <button disabled={btnLoading} type="submit">
-              Create
+            <button
+              disabled={btnLoading}
+              type="submit"
+              className={`w-full py-3 mt-8 font-semibold rounded-lg transition duration-150 ${
+                btnLoading 
+                  ? "bg-indigo-400 cursor-not-allowed" 
+                  : "bg-green-600 text-white hover:bg-green-700 shadow-md"
+              }`}
+            >
+              {btnLoading ? "Creating..." : "Create Coupon"}
             </button>
           </form>
         </article>

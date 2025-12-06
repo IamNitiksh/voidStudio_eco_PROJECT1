@@ -15,6 +15,7 @@ import {
 } from "chart.js";
 import { Bar, Doughnut, Line, Pie } from "react-chartjs-2";
 
+// Chart.js registration remains the same
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -56,7 +57,9 @@ export const BarChart = ({
     indexAxis: horizontal ? "y" : "x",
     plugins: {
       legend: {
-        display: false,
+        // Display legend only if both titles are present
+        display: !!title_1 && !!title_2, 
+        position: 'top' as const,
       },
       title: {
         display: false,
@@ -97,10 +100,10 @@ export const BarChart = ({
         barPercentage: 1,
         categoryPercentage: 0.4,
       },
-    ],
+    ].filter(dataset => dataset.data.length > 0), // Filter out empty datasets
   };
 
-  return <Bar width={horizontal ? "200%" : ""} options={options} data={data} />;
+  return <Bar options={options} data={data} />;
 };
 
 interface DoughnutChartProps {
@@ -139,7 +142,7 @@ export const DoughnutChart = ({
         display: legends,
         position: "bottom",
         labels: {
-          padding: 40,
+          padding: 20,
         },
       },
     },
@@ -177,7 +180,8 @@ export const PieChart = ({
     responsive: true,
     plugins: {
       legend: {
-        display: false,
+        display: true, // Switched to display for better context in pie chart
+        position: 'bottom',
       },
     },
   };
@@ -210,12 +214,14 @@ export const LineChart = ({
         display: false,
       },
     },
+    tension: 0.4, // Added a little curve for better look
 
     scales: {
       y: {
         beginAtZero: true,
         grid: {
-          display: false,
+          display: true, // Display y-grid for line charts
+          color: 'rgba(0,0,0,0.05)',
         },
       },
       x: {

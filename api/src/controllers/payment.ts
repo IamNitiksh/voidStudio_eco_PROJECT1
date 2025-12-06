@@ -1,96 +1,100 @@
-// import { stripe } from "../app.js"; // REMOVED
+// Imports remain the same, removing Stripe dependency
 import { TryCatch } from "../middlewares/error.js";
 import { Coupon } from "../models/coupon.js";
-import { Product } from "../models/product.js";
-import { User } from "../models/user.js";
-import { OrderItemType, ShippingInfoType } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 
-// createPaymentIntent function REMOVED as it relies on Stripe
-/*
-export const createPaymentIntent = TryCatch(async (req, res, next) => {
-  // ... entire function removed
-});
-*/
+// createPaymentIntent function REMOVED
 
 export const newCoupon = TryCatch(async (req, res, next) => {
-  const { code, amount } = req.body;
+  const { code, amount } = req.body;
 
-  if (!code || !amount)
-    return next(new ErrorHandler("Please enter both coupon and amount", 400));
+  if (!code || !amount)
+    return next(new ErrorHandler("Please enter both coupon code and amount", 400));
+    
+  const discountAmount = Number(amount);
+  if (isNaN(discountAmount) || discountAmount <= 0) 
+    return next(new ErrorHandler("Amount must be a positive number", 400));
 
-  await Coupon.create({ code, amount });
+  await Coupon.create({ code, amount: discountAmount });
 
-  return res.status(201).json({
-    success: true,
-    message: `Coupon ${code} Created Successfully`,
-  });
+  return res.status(201).json({
+    success: true,
+    message: `Coupon ${code} Created Successfully`,
+  });
 });
 
 export const applyDiscount = TryCatch(async (req, res, next) => {
-  const { coupon } = req.query;
+  const couponCode = req.query.coupon as string;
 
-  const discount = await Coupon.findOne({ code: coupon });
+  if (!couponCode) 
+     return next(new ErrorHandler("Please provide a coupon code", 400));
+    
+  const discount = await Coupon.findOne({ code: couponCode });
 
-  if (!discount) return next(new ErrorHandler("Invalid Coupon Code", 400));
+  if (!discount) return next(new ErrorHandler("Invalid Coupon Code", 400));
 
-  return res.status(200).json({
-    success: true,
-    discount: discount.amount,
-  });
+  return res.status(200).json({
+    success: true,
+    discount: discount.amount,
+  });
 });
 
 export const allCoupons = TryCatch(async (req, res, next) => {
-  const coupons = await Coupon.find({});
+  const coupons = await Coupon.find({});
 
-  return res.status(200).json({
-    success: true,
-    coupons,
-  });
+  return res.status(200).json({
+    success: true,
+    coupons,
+  });
 });
 
 export const getCoupon = TryCatch(async (req, res, next) => {
-  const { id } = req.params;
+  const { id } = req.params;
 
-  const coupon = await Coupon.findById(id);
+  const coupon = await Coupon.findById(id);
 
-  if (!coupon) return next(new ErrorHandler("Invalid Coupon ID", 400));
+  if (!coupon) return next(new ErrorHandler("Coupon Not Found", 404)); // FIX: Changed to 404
 
-  return res.status(200).json({
-    success: true,
-    coupon,
-  });
+  return res.status(200).json({
+    success: true,
+    coupon,
+  });
 });
 
 export const updateCoupon = TryCatch(async (req, res, next) => {
-  const { id } = req.params;
+  const { id } = req.params;
+  const { code, amount } = req.body;
 
-  const { code, amount } = req.body;
+  const coupon = await Coupon.findById(id);
 
-  const coupon = await Coupon.findById(id);
+  if (!coupon) return next(new ErrorHandler("Coupon Not Found", 404)); // FIX: Changed to 404
 
-  if (!coupon) return next(new ErrorHandler("Invalid Coupon ID", 400));
+  if (code) coupon.code = code;
+  
+  if (amount) {
+    const discountAmount = Number(amount);
+    if (isNaN(discountAmount) || discountAmount <= 0) 
+        return next(new ErrorHandler("Amount must be a positive number", 400));
+    coupon.amount = discountAmount;
+  }
 
-  if (code) coupon.code = code;
-  if (amount) coupon.amount = amount;
+  await coupon.save();
 
-  await coupon.save();
-
-  return res.status(200).json({
-    success: true,
-    message: `Coupon ${coupon.code} Updated Successfully`,
-  });
+  return res.status(200).json({
+    success: true,
+    message: `Coupon ${coupon.code} Updated Successfully`,
+  });
 });
 
 export const deleteCoupon = TryCatch(async (req, res, next) => {
-  const { id } = req.params;
+  const { id } = req.params;
 
-  const coupon = await Coupon.findByIdAndDelete(id);
+  const coupon = await Coupon.findByIdAndDelete(id);
 
-  if (!coupon) return next(new ErrorHandler("Invalid Coupon ID", 400));
+  if (!coupon) return next(new ErrorHandler("Coupon Not Found", 404)); // FIX: Changed to 404
 
-  return res.status(200).json({
-    success: true,
-    message: `Coupon ${coupon.code} Deleted Successfully`,
-  });
+  return res.status(200).json({
+    success: true,
+    message: `Coupon ${coupon.code} Deleted Successfully`,
+  });
 });

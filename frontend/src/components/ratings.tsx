@@ -6,6 +6,7 @@ const RatingsComponent = ({ value = 0 }: { value: number }) => {
     IconFilled: <FaStar />,
     IconOutline: <FaRegStar />,
     value,
+    // Custom styles passed to the hook:
     styles: {
       fontSize: "1.75rem",
       color: "coral",
@@ -14,7 +15,11 @@ const RatingsComponent = ({ value = 0 }: { value: number }) => {
     },
   });
 
-  return <Ratings />;
+  return (
+    <div className="flex items-center">
+        <Ratings />
+    </div>
+  );
 };
 
 export default RatingsComponent;
